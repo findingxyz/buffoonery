@@ -12,6 +12,7 @@ import Buffoonery.Card ( Card(Card, suit), Suit(Spades) )
 
 {-
 expected (fmap (\([(Card _ s1 _ _ _), (Card _ s2 _ _ _), (Card _ s3 _ _ _)], _) -> if [s1, s2, s3] == [Spades, Spades, Spades] then 1 else 0) a)
+expected $ fmap (length . fst) (_ :: Dist.T prob ([Card], [Card]))
 -}
 
 is3Spades :: ([Card], a) -> Bool
@@ -26,3 +27,4 @@ draw3 = (10000 ~. const (drawN 3)) undefined
 
 foursuits :: (Fractional prob, Ord prob, Random prob) => Rnd.Distribution prob ([Card], [Card])
 foursuits = (10000 ~. const (drawUntil ((== 4) . length . nub . map suit))) undefined
+

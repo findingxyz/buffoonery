@@ -12,7 +12,6 @@ import Control.Monad (replicateM)
 
 import System.Random (Random)
 
-
 import Buffoonery.Card
     ( Cards,
       Card(..),
