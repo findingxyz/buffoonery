@@ -1,5 +1,7 @@
 module Buffoonery.Card where
 
+import Data.List (delete)
+
 data Rank = Unranked | Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace
     deriving (Eq, Ord, Enum, Show)
 
@@ -36,3 +38,13 @@ chips (Card Queen _ _ _ _) = 10
 chips (Card King _ _ _ _) = 10
 chips (Card Ace _ _ _ _) = 11
 chips (Card r _ _ _ _) = fromEnum r + 1
+
+addCard :: Card -> Deck -> Deck
+addCard = (:)
+
+removeCard :: Card -> Deck -> Deck
+removeCard = delete
+
+filterDeck :: (Card -> Bool) -> Deck -> Deck
+filterDeck = filter
+
