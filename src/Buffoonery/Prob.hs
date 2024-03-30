@@ -14,8 +14,7 @@ import System.Random (Random)
 
 import Buffoonery.Card
     ( Cards,
-      Card(..),
-      standard52 )
+      Card(..) )
 import Buffoonery.Utils ( untilM, while, doWhile )
 
 selectOne :: (Fractional prob) => StateT [a] (Dist.T prob) a
@@ -30,21 +29,21 @@ draw (cards,cl) = runStateT (fmap (:cards) selectOne) cl
 drawF :: ([Card], Cards) -> Dist ([Card], Cards)
 drawF = draw
 
-drawN :: Int -> Rnd.T ([Card], [Card])
-drawN n =
+drawN :: Int -> [Card] -> Rnd.T ([Card], [Card])
+drawN n deck =
    doWhile
       (\(cards,_) -> length cards < n)
-      (Rnd.change drawF) ([], standard52)
+      (Rnd.change drawF) ([], deck)
 
-drawWhile :: ([Card] -> Bool) -> Rnd.T ([Card], [Card])
-drawWhile p =
+drawWhile :: ([Card] -> Bool) -> [Card] -> Rnd.T ([Card], [Card])
+drawWhile p deck =
    while
-      (\(cards, _) -> p cards) (Rnd.change drawF) ([], standard52)
+      (\(cards, _) -> p cards) (Rnd.change drawF) ([], deck)
 
-drawUntil :: ([Card] -> Bool) -> Rnd.T ([Card], [Card])
-drawUntil p =
+drawUntil :: ([Card] -> Bool) -> [Card] -> Rnd.T ([Card], [Card])
+drawUntil p deck =
    untilM
-      (\(cards, _) -> p cards) (Rnd.change drawF) ([], standard52)
+      (\(cards, _) -> p cards) (Rnd.change drawF) ([], deck)
 
 expected :: (Fractional prob, Integral a) => Dist.T prob a -> prob
 expected = sum . fmap (\(x, p) -> fromIntegral x * p) . Dist.decons
