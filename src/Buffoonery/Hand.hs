@@ -8,38 +8,52 @@ import Buffoonery.Utils ( mapBoth, toBoth )
 
 type Played = [Card]
 
-data Hand = HighCard Card
-          | Pair [Card]
-          | TwoPair [Card]
-          | ThreeKind [Card]
-          | Straight [Card]
-          | Flush [Card]
-          | FullHouse ([Card], [Card])
-          | FourKind [Card]
-          | StraightFlush [Card]
-          | FiveKind [Card]
-          | FlushHouse [Card]
-          | FlushFive [Card]
-          deriving (Show, Eq, Ord)
+data Hand = HighCard
+          | Pair
+          | TwoPair
+          | ThreeKind
+          | Straight
+          | Flush
+          | FullHouse
+          | FourKind
+          | StraightFlush
+          | FiveKind
+          | FlushHouse
+          | FlushFive
+          deriving (Show, Read, Eq, Ord)
+
+data PlayedHand = PHighCard Card
+                | PPair [Card]
+                | PTwoPair [Card]
+                | PThreeKind [Card]
+                | PStraight [Card]
+                | PFlush [Card]
+                | PFullHouse ([Card], [Card])
+                | PFourKind [Card]
+                | PStraightFlush [Card]
+                | PFiveKind [Card]
+                | PFlushHouse [Card]
+                | PFlushFive [Card]
+                deriving (Show, Eq, Ord)
 
 identifyHand :: Played -> [Hand]
 identifyHand hand = sortBy (comparing Down) undefined
   where _len = length hand
 
-scoreHand :: [Hand] -> (Int, Int)
+scoreHand :: [PlayedHand] -> (Int, Int)
 scoreHand [] = (0, 0)
 scoreHand (hand:_) =
     let levels = 1 in
     case hand of
-        HighCard _ -> toBoth (+) (5, 1) $ mapBoth (* levels) (1, 10)
-        Pair _ -> (10, 2)
-        TwoPair _ -> (20, 2)
-        ThreeKind _ -> (30, 3)
-        Straight _ -> (30, 4)
-        Flush _ -> (35, 4)
-        FullHouse _ -> (40, 4)
-        FourKind _ -> (60, 7)
-        StraightFlush _ -> (100, 8)
-        FiveKind _ -> (100, 10)
-        FlushHouse _ -> (120, 12)
-        FlushFive _ -> (150, 14)
+        PHighCard _ -> toBoth (+) (5, 1) $ mapBoth (* levels) (1, 10)
+        PPair _ -> (10, 2)
+        PTwoPair _ -> (20, 2)
+        PThreeKind _ -> (30, 3)
+        PStraight _ -> (30, 4)
+        PFlush _ -> (35, 4)
+        PFullHouse _ -> (40, 4)
+        PFourKind _ -> (60, 7)
+        PStraightFlush _ -> (100, 8)
+        PFiveKind _ -> (100, 10)
+        PFlushHouse _ -> (120, 12)
+        PFlushFive _ -> (150, 14)

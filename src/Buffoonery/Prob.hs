@@ -40,10 +40,10 @@ drawWhile p deck =
    while
       (\(cards, _) -> p cards) (Rnd.change drawF) ([], deck)
 
-drawUntil :: ([Card] -> Bool) -> [Card] -> Rnd.T ([Card], [Card])
-drawUntil p deck =
+drawUntil :: ([Card] -> Bool) -> ([Card], [Card]) -> Rnd.T ([Card], [Card])
+drawUntil p =
    untilM
-      (\(cards, _) -> p cards) (Rnd.change drawF) ([], deck)
+      (\(cards, _) -> p cards) (Rnd.change drawF)
 
 expected :: (Fractional prob, Integral a) => Dist.T prob a -> prob
 expected = sum . fmap (\(x, p) -> fromIntegral x * p) . Dist.decons

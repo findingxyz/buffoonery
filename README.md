@@ -2,7 +2,18 @@
 something to "help" you play Balatro
 
 In Balatro sometimes you want to know the likelihood of drawing a flush, or a two pair, or drawing the cards to play them.
-This program gives the answer.
+This program gives the answer. It simulates draws, otherwise it will take too long to calculate exact probabilities.
+
+### right now output
+Create a standard 52 card deck and find the expected number of draws required to play a high card.
+```
+> create
+> drawInto HighCard
+0.99999875
+> hand
+0 card(s) in hand: 
+[]
+```
 
 ### possible output
 ```

@@ -1,5 +1,7 @@
 module Buffoonery.Utils where
 
+import Control.Monad.IO.Class ( MonadIO(liftIO) )
+
 mapBoth :: (a -> b) -> (a, a) -> (b, b)
 mapBoth f (x, y) = (f x, f y)
 
@@ -21,3 +23,5 @@ doWhile p t =
    let recourse x = t x >>= \l -> if p l then recourse l else return l
    in  recourse
 
+putStrLnL :: MonadIO m => String -> m ()
+putStrLnL = liftIO . putStrLn

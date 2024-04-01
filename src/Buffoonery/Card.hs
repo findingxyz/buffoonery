@@ -48,3 +48,24 @@ removeCard = delete
 filterDeck :: (Card -> Bool) -> Deck -> Deck
 filterDeck = filter
 
+miniShow :: Card -> String
+miniShow (Card r s ed en sl) =
+    show r ++ " " ++ show s ++ " " ++ 
+    show ed ++ dontshownothing en ++ dontshownothing sl
+
+dontshownothing :: Show a => Maybe a -> String
+dontshownothing Nothing = ""
+dontshownothing (Just x) = show x ++ " "
+
+minierShow :: Card -> String
+minierShow (Card r s ed en sl) =
+    showRank r ++ [head (show s)] ++
+    dontshownormal ed ++ dontshownothing en ++ dontshownothing sl
+    where showRank Ace = "A"
+          showRank King = "K"
+          showRank Queen = "Q"
+          showRank Jack = "J"
+          showRank r' = show $ fromEnum r' + 1
+          dontshownormal Normal = ""
+          dontshownormal e = show e ++ " "
+
