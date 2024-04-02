@@ -66,7 +66,7 @@ command = do
                 Just rhand -> do
                     (hand, deck) <- get
                     a <- liftIO . Rnd.run $ ((10000 ~. const (drawUntil (checkHand rhand) (hand, deck))) undefined :: Rnd.Distribution Float ([Card], [Card]))
-                    liftIO . print $ expected $ fmap (length . fst) a
+                    liftIO . print $ expected $ fmap (subtract (length hand) . length . fst) a
                     pure True
         "hand" : _ -> do
             (hand, _) <- get
