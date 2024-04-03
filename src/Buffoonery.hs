@@ -12,9 +12,9 @@ import System.Random (Random)
 
 import Text.Read (readMaybe)
 
-import Buffoonery.Prob ( drawN, drawUntil, expected )
+import Buffoonery.Prob ( drawN, drawUntil, expected, stdDev )
 import Buffoonery.Card ( standard52, Card(Card), Suit(Spades), minierShow )
-import Buffoonery.Hand ( Hand(HighCard) )
+import Buffoonery.Hand ( Hand(..), countRanks )
 
 {-
 expected (fmap (\([(Card _ s1 _ _ _), (Card _ s2 _ _ _), (Card _ s3 _ _ _)], _) -> if [s1, s2, s3] == [Spades, Spades, Spades] then 1 else 0) a)
@@ -35,9 +35,12 @@ draw3 deck = (10000 ~. const (drawN 3 deck)) undefined
 --foursuits deck = (10000 ~. const (drawUntil ((== 4) . length . nub . map suit) deck)) undefined
 
 checkHand :: Hand -> [Card] -> Bool
+checkHand _ [] = False
 checkHand ph h =
     case ph of
         HighCard -> h /= []
+        Pair -> maximum (countRanks h) == 2
+        FullHouse -> let counted = countRanks h in elem 2 counted && elem 3 counted
         _ -> undefined
 
 --command :: (Fractional prob, Ord prob, Random prob) => String -> StateT [Card] (Dist.T prob) (Either String ([Card], [Card]))
@@ -65,8 +68,10 @@ command = do
                 Nothing -> liftIO $ putStrLn "unknown hand type" >> pure True
                 Just rhand -> do
                     (hand, deck) <- get
-                    a <- liftIO . Rnd.run $ ((10000 ~. const (drawUntil (checkHand rhand) (hand, deck))) undefined :: Rnd.Distribution Float ([Card], [Card]))
-                    liftIO . print $ expected $ fmap (subtract (length hand) . length . fst) a
+                    sims <- liftIO . Rnd.run $ ((10000 ~. const (drawUntil (checkHand rhand) (hand, deck))) undefined :: Rnd.Distribution Float ([Card], [Card]))
+                    let draws = fmap (subtract (length hand) . length . fst) sims
+                    liftIO (putStr "mean, std: ")
+                    liftIO . print $ (expected draws, stdDev draws)
                     pure True
         "hand" : _ -> do
             (hand, _) <- get
