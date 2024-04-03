@@ -48,6 +48,13 @@ drawUntil p =
 expected :: (Fractional prob, Integral a) => Dist.T prob a -> prob
 expected = sum . fmap (\(x, p) -> fromIntegral x * p) . Dist.decons
 
+variance :: (Fractional prob, Integral a) => Dist.T prob a -> prob
+variance d = (sum . fmap (\(x, _) -> (fromIntegral x - ex) ^ (2 :: Int)) $ Dist.decons d) / fromIntegral (Dist.size d)
+   where ex = expected d
+
+stdDev :: (Floating prob, Fractional prob, Integral a) => Dist.T prob a -> prob
+stdDev = sqrt . variance
+
 simulated :: (Fractional prob, Ord prob, Random prob) => (a -> Bool) -> Rnd.Distribution prob a -> IO prob
 simulated p rd = do
     ds <- Rnd.run rd
