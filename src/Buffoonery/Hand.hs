@@ -3,7 +3,9 @@ module Buffoonery.Hand where
 import Data.List ( sortBy )
 import Data.Ord ( comparing, Down(Down) )
 
-import Buffoonery.Card ( Card )
+import qualified Data.IntMap.Strict as IM
+
+import Buffoonery.Card ( Card(..))
 import Buffoonery.Utils ( mapBoth, toBoth )
 
 type Played = [Card]
@@ -57,3 +59,13 @@ scoreHand (hand:_) =
         PFiveKind _ -> (100, 10)
         PFlushHouse _ -> (120, 12)
         PFlushFive _ -> (150, 14)
+
+countRanks :: Played -> [Int]
+countRanks = IM.elems . countWithRanks
+    where countWithRanks = foldr (\c acc -> IM.insertWith (+) (fromEnum $ rank c) 1 acc) IM.empty
+
+countSuits :: Played -> [Int]
+countSuits = IM.elems . countWithSuits
+    where countWithSuits = foldr (\c acc -> IM.insertWith (+) (fromEnum $ suit c) 1 acc) IM.empty
+
+
