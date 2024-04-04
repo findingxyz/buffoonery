@@ -8,13 +8,15 @@ import Control.Monad.Trans.State (StateT, evalStateT, put, get)
 import Control.Monad.IO.Class ( MonadIO(liftIO) )
 import Control.Monad (when)
 
+import Data.List (sort)
+
 import System.Random (Random)
 
 import Text.Read (readMaybe)
 
 import Buffoonery.Prob ( drawN, drawUntil, expected, stdDev )
-import Buffoonery.Card ( standard52, Card(Card), Suit(Spades), minierShow )
-import Buffoonery.Hand ( Hand(..), countRanks )
+import Buffoonery.Card ( standard52, Card(..), Suit(..), Rank(..), Edition(..), csc, minierShow )
+import Buffoonery.Hand ( Hand(..), countRanks, countSuits )
 
 {-
 expected (fmap (\([(Card _ s1 _ _ _), (Card _ s2 _ _ _), (Card _ s3 _ _ _)], _) -> if [s1, s2, s3] == [Spades, Spades, Spades] then 1 else 0) a)
@@ -38,10 +40,27 @@ checkHand :: Hand -> [Card] -> Bool
 checkHand _ [] = False
 checkHand ph h =
     case ph of
-        HighCard -> h /= []
+        HighCard -> h /= [] || True
         Pair -> maximum (countRanks h) == 2
+        TwoPair -> filter (== 2) (countRanks h) == [2, 2]
+        ThreeKind -> maximum (countRanks h) == 3
+        --ThreeKind -> 3 `elem` countRanks h
+        Straight -> longestStraight 1 h >= 5
+        Flush -> any (>=5) $ countSuits h
         FullHouse -> let counted = countRanks h in elem 2 counted && elem 3 counted
-        _ -> undefined
+        _ -> True
+
+randomHand :: [Card]
+randomHand = [ csc Ace Spades, csc Two Clubs, csc Ten Diamonds, csc Seven Hearts, csc Three Clubs, csc Four Clubs, csc Queen Spades ]
+
+fstOf3 (x, _, _) = x
+
+longestStraight :: Int -> [Card] -> Int
+longestStraight o h = fstOf3 $ foldr (\r (len, prevmax, prev) ->
+        if r == 12
+        then (if not ((abs (-1 - prev) <= o && r - prev > 0) || (r - prev <= o && r - prev > 0)) then len + 1 else 0, max len prevmax, r)
+        else (if not (r - prev <= o && r - prev > 0) then len + 1 else 0, max len prevmax, r)) (0, 0, head sorted) $ tail sorted
+    where sorted = sort $ map (fromEnum . rank) h
 
 --command :: (Fractional prob, Ord prob, Random prob) => String -> StateT [Card] (Dist.T prob) (Either String ([Card], [Card]))
 command :: StateT ([Card], [Card]) IO Bool
@@ -65,7 +84,10 @@ command = do
                     pure True
         "drawInto" : phand : _ ->
             case readMaybe phand of
-                Nothing -> liftIO $ putStrLn "unknown hand type" >> pure True
+                Nothing ->
+                    if phand /= "All"
+                    then undefined
+                    else liftIO $ putStrLn "unknown hand type" >> pure True
                 Just rhand -> do
                     (hand, deck) <- get
                     sims <- liftIO . Rnd.run $ ((10000 ~. const (drawUntil (checkHand rhand) (hand, deck))) undefined :: Rnd.Distribution Float ([Card], [Card]))
