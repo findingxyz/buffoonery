@@ -55,6 +55,9 @@ variance d = (sum . fmap (\(x, _) -> (fromIntegral x - ex) ^ (2 :: Int)) $ Dist.
 stdDev :: (Floating prob, Fractional prob, Integral a) => Dist.T prob a -> prob
 stdDev = sqrt . variance
 
+--variance :: (Num a, Integral b) => Dist.T a b -> Dist.T c d
+--variance x = fmap (\v -> (v - expected x) ^ 2) x / Dist.size x
+
 simulated :: (Fractional prob, Ord prob, Random prob) => (a -> Bool) -> Rnd.Distribution prob a -> IO prob
 simulated p rd = do
     ds <- Rnd.run rd
