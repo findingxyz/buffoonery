@@ -2,7 +2,7 @@ module Buffoonery.Card where
 
 import Data.List (delete)
 
-data Rank = Unranked | Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace
+data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace
     deriving (Eq, Ord, Enum, Show)
 
 data Suit = Diamonds | Clubs | Hearts | Spades
@@ -28,11 +28,16 @@ data Card = Card {
 type Deck = [Card]
 type Cards = [Card]
 
+createStandardCard :: Rank -> Suit -> Card
+createStandardCard r s = Card r s Normal Nothing Nothing
+
+csc :: Rank -> Suit -> Card
+csc = createStandardCard
+
 standard52 :: Deck
-standard52 = [ Card r s Normal Nothing Nothing | r <- [Two ..], s <- [Diamonds ..] ]
+standard52 = [ csc r s | r <- [Two ..], s <- [Diamonds ..] ]
 
 chips :: Card -> Int
-chips (Card Unranked _ _ _ _) = 0
 chips (Card Jack _ _ _ _) = 10
 chips (Card Queen _ _ _ _) = 10
 chips (Card King _ _ _ _) = 10
