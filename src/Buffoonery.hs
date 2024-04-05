@@ -8,7 +8,9 @@ import Control.Monad.Trans.State (StateT, evalStateT, put, get)
 import Control.Monad.IO.Class ( MonadIO(liftIO) )
 import Control.Monad (when)
 
-import Data.List (sort)
+import Data.List (nub, sort)
+
+import Control.Exception (catch, ErrorCall)
 
 import System.Random (Random)
 
@@ -44,11 +46,18 @@ checkHand ph h =
         Pair -> maximum (countRanks h) == 2
         TwoPair -> filter (== 2) (countRanks h) == [2, 2]
         ThreeKind -> maximum (countRanks h) == 3
-        --ThreeKind -> 3 `elem` countRanks h
-        Straight -> longestStraight 1 h >= 5
-        Flush -> any (>=5) $ countSuits h
-        FullHouse -> let counted = countRanks h in elem 2 counted && elem 3 counted
-        _ -> True
+        Straight -> isStraight h
+        Flush -> isFlush h
+        FullHouse -> isFullHouse h
+        FourKind -> maximum (countRanks h) == 4
+        StraightFlush -> isStraight h && isFlush h
+        FiveKind -> maximum (countRanks h) == 5
+        FlushHouse -> isFullHouse h && isFlush h
+        FlushFive -> maximum (countRanks h) == 5 && isFlush h
+        _ -> False
+  where isFlush = any (>= 5) . countSuits
+        isStraight h = longestStraight 1 h >= 5
+        isFullHouse h = let counted = countRanks h in elem 2 counted && elem 3 counted
 
 randomHand :: [Card]
 randomHand = [ csc Ace Spades, csc Two Clubs, csc Ten Diamonds, csc Seven Hearts, csc Three Clubs, csc Four Clubs, csc Queen Spades ]
@@ -57,10 +66,10 @@ fstOf3 (x, _, _) = x
 
 longestStraight :: Int -> [Card] -> Int
 longestStraight o h = fstOf3 $ foldr (\r (len, prevmax, prev) ->
-        if r == 12
-        then (if not ((abs (-1 - prev) <= o && r - prev > 0) || (r - prev <= o && r - prev > 0)) then len + 1 else 0, max len prevmax, r)
-        else (if not (r - prev <= o && r - prev > 0) then len + 1 else 0, max len prevmax, r)) (0, 0, head sorted) $ tail sorted
-    where sorted = sort $ map (fromEnum . rank) h
+        undefined) (0, 0, head sorted) $ tail sorted
+    where sorted = nub . sort $ map (fromEnum . rank) h
+
+g = sort . map (fromEnum . rank)
 
 --command :: (Fractional prob, Ord prob, Random prob) => String -> StateT [Card] (Dist.T prob) (Either String ([Card], [Card]))
 command :: StateT ([Card], [Card]) IO Bool
@@ -85,15 +94,18 @@ command = do
         "drawInto" : phand : _ ->
             case readMaybe phand of
                 Nothing ->
-                    if phand /= "All"
+                    if phand == "All"
                     then undefined
                     else liftIO $ putStrLn "unknown hand type" >> pure True
                 Just rhand -> do
                     (hand, deck) <- get
-                    sims <- liftIO . Rnd.run $ ((10000 ~. const (drawUntil (checkHand rhand) (hand, deck))) undefined :: Rnd.Distribution Float ([Card], [Card]))
-                    let draws = fmap (subtract (length hand) . length . fst) sims
-                    liftIO (putStr "mean, std: ")
-                    liftIO . print $ (expected draws, stdDev draws)
+                    let sims = Rnd.run $ ((10000 ~. const (drawUntil (checkHand rhand) (hand, deck))) undefined :: Rnd.Distribution Float ([Card], [Card]))
+                    tried <- liftIO $ catch (do
+                        sims' <- liftIO sims
+                        let draws = fmap (subtract (length hand) . length . fst) sims'
+                        liftIO (putStr "mean, std: ")
+                        --liftIO . print $ (expected draws, stdDev draws)) ((\e -> print e) :: ErrorCall -> IO ())
+                        liftIO . print $ (expected draws, stdDev draws)) ((\_ -> putStrLn "impossible") :: ErrorCall -> IO ())
                     pure True
         "hand" : _ -> do
             (hand, _) <- get
