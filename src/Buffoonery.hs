@@ -42,26 +42,23 @@ checkHand :: Hand -> [Card] -> Bool
 checkHand _ [] = False
 checkHand ph h =
     case ph of
-        HighCard -> h /= [] || True
+        HighCard -> True
         Pair -> maximum (countRanks h) == 2
         TwoPair -> filter (== 2) (countRanks h) == [2, 2]
         ThreeKind -> maximum (countRanks h) == 3
-        Straight -> isStraight h
-        Flush -> isFlush h
-        FullHouse -> isFullHouse h
+        Straight -> longestStraight 1 h >= 5
+        Flush -> any (>= 5) (countSuits h)
+        FullHouse -> let counted = countRanks h in elem 2 counted && elem 3 counted
         FourKind -> maximum (countRanks h) == 4
-        StraightFlush -> isStraight h && isFlush h
+        StraightFlush -> undefined
         FiveKind -> maximum (countRanks h) == 5
-        FlushHouse -> isFullHouse h && isFlush h
-        FlushFive -> maximum (countRanks h) == 5 && isFlush h
-        _ -> False
-  where isFlush = any (>= 5) . countSuits
-        isStraight h = longestStraight 1 h >= 5
-        isFullHouse h = let counted = countRanks h in elem 2 counted && elem 3 counted
+        FlushHouse -> undefined
+        FlushFive -> undefined
 
 randomHand :: [Card]
 randomHand = [ csc Ace Spades, csc Two Clubs, csc Ten Diamonds, csc Seven Hearts, csc Three Clubs, csc Four Clubs, csc Queen Spades ]
 
+fstOf3 :: (a, b, c) -> a
 fstOf3 (x, _, _) = x
 
 longestStraight :: Int -> [Card] -> Int
@@ -69,7 +66,7 @@ longestStraight o h = fstOf3 $ foldr (\r (len, prevmax, prev) ->
         undefined) (0, 0, head sorted) $ tail sorted
     where sorted = nub . sort $ map (fromEnum . rank) h
 
-g = sort . map (fromEnum . rank)
+--g = sort . map (fromEnum . rank)
 
 --command :: (Fractional prob, Ord prob, Random prob) => String -> StateT [Card] (Dist.T prob) (Either String ([Card], [Card]))
 command :: StateT ([Card], [Card]) IO Bool
@@ -100,11 +97,11 @@ command = do
                 Just rhand -> do
                     (hand, deck) <- get
                     let sims = Rnd.run $ ((10000 ~. const (drawUntil (checkHand rhand) (hand, deck))) undefined :: Rnd.Distribution Float ([Card], [Card]))
-                    tried <- liftIO $ catch (do
+                    liftIO $ catch (do
                         sims' <- liftIO sims
                         let draws = fmap (subtract (length hand) . length . fst) sims'
                         liftIO (putStr "mean, std: ")
-                        --liftIO . print $ (expected draws, stdDev draws)) ((\e -> print e) :: ErrorCall -> IO ())
+                        --liftIO . print $ (expected draws, stdDev draws)) (print :: ErrorCall -> IO ())
                         liftIO . print $ (expected draws, stdDev draws)) ((\_ -> putStrLn "impossible") :: ErrorCall -> IO ())
                     pure True
         "hand" : _ -> do
