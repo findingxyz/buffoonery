@@ -85,7 +85,7 @@ command = do
                     then liftIO $ putStrLn ("tried to draw too much (" ++ show num ++ " from " ++ show lhand ++ ")")
                     else do
                         (drawn, left) <- liftIO . Rnd.run $ drawN num deck
-                        liftIO $ print drawn
+                        liftIO $ print (map minierShow drawn)
                         put (hand ++ drawn, left)
                     pure True
         "drawUntil" : phand : _ ->
@@ -106,7 +106,7 @@ command = do
                     pure True
         "hand" : _ -> do
             (hand, _) <- get
-            liftIO (putStrLn (show (length hand) ++ " card(s) in hand: ") >> print hand) >> pure True
+            liftIO (putStrLn (show (length hand) ++ " card(s) in hand: ") >> print (map minierShow hand)) >> pure True
         "deck" : _ -> do
             (_, deck) <- get
             liftIO (putStrLn (show (length deck) ++ " card(s) in hand: ") >> print (map minierShow deck)) >> pure True
