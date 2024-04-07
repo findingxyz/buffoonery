@@ -8,11 +8,21 @@ This program gives the answer. It simulates draws, otherwise it will take too lo
 Create a standard 52 card deck and find the expected number of draws required to play a high card.
 ```
 > create
-> drawInto HighCard
-0.99999875
+> drawUntil FullHouse
+mean, std: (13.879368,3.7087715)
 > hand
 0 card(s) in hand: 
 []
+> draw 13
+["JC","JH","KS","KC","9C","3S","QH","9D","QS","4H","AH","5H","8H"]
+> hand
+13 card(s) in hand: 
+["JC","JH","KS","KC","9C","3S","QH","9D","QS","4H","AH","5H","8H"]
+> draw 1
+["KH"]
+> hand
+14 card(s) in hand: 
+["JC","JH","KS","KC","9C","3S","QH","9D","QS","4H","AH","5H","8H","KH"]
 ```
 
 ### possible output
