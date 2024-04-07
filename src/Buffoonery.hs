@@ -88,7 +88,7 @@ command = do
                         liftIO $ print drawn
                         put (hand ++ drawn, left)
                     pure True
-        "drawInto" : phand : _ ->
+        "drawUntil" : phand : _ ->
             case readMaybe phand of
                 Nothing ->
                     if phand == "All"
