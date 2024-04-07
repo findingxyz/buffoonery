@@ -96,13 +96,13 @@ command = do
                     else liftIO $ putStrLn "unknown hand type" >> pure True
                 Just rhand -> do
                     (hand, deck) <- get
-                    let sims = Rnd.run $ ((10000 ~. const (drawUntil (checkHand rhand) (hand, deck))) undefined :: Rnd.Distribution Float ([Card], [Card]))
+                    let sims = Rnd.run ((10000 ~. const (drawUntil (checkHand rhand) (hand, deck))) undefined :: Rnd.Distribution Float ([Card], [Card]))
                     liftIO $ catch (do
                         sims' <- liftIO sims
                         let draws = fmap (subtract (length hand) . length . fst) sims'
-                        liftIO (putStr "mean, std: ")
-                        --liftIO . print $ (expected draws, stdDev draws)) (print :: ErrorCall -> IO ())
-                        liftIO . print $ (expected draws, stdDev draws)) ((\_ -> putStrLn "impossible") :: ErrorCall -> IO ())
+                        liftIO $ do putStr "mean, std: "
+                                    print (expected draws, stdDev draws))
+                        ((\_ -> putStrLn "impossible") :: ErrorCall -> IO ())
                     pure True
         "hand" : _ -> do
             (hand, _) <- get
