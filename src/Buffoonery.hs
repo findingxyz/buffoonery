@@ -50,10 +50,10 @@ checkHand ph h =
         Flush -> any (>= 5) (countSuits h)
         FullHouse -> let counted = countRanks h in elem 2 counted && elem 3 counted
         FourKind -> maximum (countRanks h) == 4
-        StraightFlush -> undefined
+        StraightFlush -> undefined -- given a straight, is it also a flush?
         FiveKind -> maximum (countRanks h) == 5
-        FlushHouse -> undefined
-        FlushFive -> undefined
+        FlushHouse -> undefined -- the full house given, is it flush?
+        FlushFive -> undefined -- are the 5 selected cards the same? (ignoring enhancement/stamps/editions)
 
 randomHand :: [Card]
 randomHand = [ csc Ace Spades, csc Two Clubs, csc Ten Diamonds, csc Seven Hearts, csc Three Clubs, csc Four Clubs, csc Queen Spades ]
