@@ -8,7 +8,7 @@ import Control.Monad.Trans.State (StateT, evalStateT, put, get)
 import Control.Monad.IO.Class ( MonadIO(liftIO) )
 import Control.Monad (when)
 
-import Data.List (nub, sort)
+import Data.List (nub, sort, sortOn, groupBy)
 
 import Control.Exception (catch, ErrorCall)
 
@@ -53,7 +53,7 @@ checkHand ph h =
         StraightFlush -> undefined -- given a straight, is it also a flush?
         FiveKind -> maximum (countRanks h) == 5
         FlushHouse -> undefined -- the full house given, is it flush?
-        FlushFive -> undefined -- are the 5 selected cards the same? (ignoring enhancement/stamps/editions)
+        FlushFive -> (== 5) . maximum . map length . groupBy (\c1 c2 -> rank c1 == rank c2 && suit c1 == suit c2) . sortOn rank . sortOn suit $ h
 
 randomHand :: [Card]
 randomHand = [ csc Ace Spades, csc Two Clubs, csc Ten Diamonds, csc Seven Hearts, csc Three Clubs, csc Four Clubs, csc Queen Spades ]
